@@ -3,8 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Idea Bank</title>
+<title>HeadPrint</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 26 26'><polygon points='13,2 24,22 2,22' fill='none' stroke='%23ffd21f' stroke-width='2'/><circle cx='13' cy='15' r='3' fill='%23ffd21f'/></svg>">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#0c2d57">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="HeadPrint">
+<link rel="apple-touch-icon" href="icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600&family=Barlow:wght@400;500&display=swap" rel="stylesheet">
 <style>
@@ -71,7 +77,7 @@ ul.ideas{list-style:none;margin:0;padding:0;display:grid;gap:8px}
 .acts .re{color:var(--cyan);border-color:var(--cyan)}
 .acts .del{color:var(--muted)}
 .empty{color:var(--muted);font-size:14px;padding:12px 0}
-.foot{display:flex;justify-content:flex-end;margin-top:10px}
+.foot{display:flex;justify-content:flex-end;gap:16px;flex-wrap:wrap;margin-top:10px}
 .foot button{background:none;border:0;color:var(--muted);font-size:13px;text-decoration:underline;cursor:pointer}
 .chip{position:fixed;z-index:50;pointer-events:none;font-family:var(--hud);font-weight:600;font-size:14px;color:#0c2d57;background:var(--cc);padding:6px 10px;border-radius:2px;max-width:220px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;box-shadow:0 0 18px var(--cc)}
 .stats{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:16px}
@@ -116,7 +122,7 @@ ul.ideas{list-style:none;margin:0;padding:0;display:grid;gap:8px}
 <header>
   <div class="mark">
     <svg viewBox="0 0 26 26" aria-hidden="true"><polygon points="13,2 24,22 2,22" fill="none" stroke="#ffd21f" stroke-width="2"/><circle cx="13" cy="15" r="3" fill="#ffd21f"/></svg>
-    IDEA//BANK <small>park it, bank it, or bin it</small>
+    HEADPRINT <small>park it, bank it, or bin it</small>
   </div>
   <div class="views" role="group" aria-label="View">
     <button id="vMap" aria-pressed="true">Map</button>
@@ -173,7 +179,7 @@ ul.ideas{list-style:none;margin:0;padding:0;display:grid;gap:8px}
       </div>
     </div>
     <ul class="ideas" id="list"></ul>
-    <div class="foot"><button id="reset">Clear sample ideas and start empty</button></div>
+    <div class="foot"><button id="export">⤓ Export backup</button><button id="import">⤒ Import backup</button><button id="reset">Clear all</button><input id="importFile" type="file" accept="application/json,.json" hidden></div>
   </section>
 </main>
 
@@ -196,8 +202,8 @@ ul.ideas{list-style:none;margin:0;padding:0;display:grid;gap:8px}
 
 <main id="aboutView" hidden>
   <section class="panel about">
-    <h2 class="atitle">💡 What is IDEA//BANK?</h2>
-    <p class="lead">Your head is noisy. IDEA//BANK is a quiet place to catch each idea or thought as it turns up, decide what it's worth in one quick pass, and act on that: <b>bank</b> the good ones, <b>park</b> the maybes, and <b>bin</b> the rest. Once a thought has a home, your mind can stop carrying it.</p>
+    <h2 class="atitle">💡 What is HeadPrint?</h2>
+    <p class="lead">Your head is noisy. HeadPrint is a quiet place to catch each idea or thought as it turns up, decide what it's worth in one quick pass, and act on that: <b>bank</b> the good ones, <b>park</b> the maybes, and <b>bin</b> the rest. Once a thought has a home, your mind can stop carrying it.</p>
     <div class="acards">
       <div class="acard" style="--ac:var(--bank)"><h3>🏦 Bank</h3><p>Ideas worth keeping, filed under the part of life they serve: Mind, Soul, Body, Financial, Career.</p></div>
       <div class="acard" style="--ac:var(--park)"><h3>🅿️ Parking</h3><p>Not sure yet? Park it. It waits without nagging, and you can pull it back into the loop whenever you want.</p></div>
@@ -205,7 +211,7 @@ ul.ideas{list-style:none;margin:0;padding:0;display:grid;gap:8px}
     </div>
 
     <h2 class="atitle">🧠 Why this helps</h2>
-    <p class="lead">IDEA//BANK borrows a few moves from <b>Cognitive Behavioral Therapy</b> (CBT), one of the most studied talk-therapy toolkits. It isn't therapy, but these small habits are the everyday version of what CBT practises.</p>
+    <p class="lead">HeadPrint borrows a few moves from <b>Cognitive Behavioral Therapy</b> (CBT), one of the most studied talk-therapy toolkits. It isn't therapy, but these small habits are the everyday version of what CBT practises.</p>
     <ul class="why">
       <li>✍️ <b>Get it out of your head.</b> An unfinished thought keeps tugging for attention, an old finding known as the Zeigarnik effect. Writing it into a place you trust to revisit lets your mind stop rehearsing it.</li>
       <li>🏷️ <b>Name it to tame it.</b> Tagging a thought and filing it puts a step between you and it. CBT calls this externalizing: you begin to see a thought as a thought, not a fact.</li>
@@ -251,7 +257,7 @@ const ACCTS=[
  {k:'B',name:'Body'},{k:'F',name:'Financial'},{k:'C',name:'Career'}];
 const TRASH=[{k:'recyclable',name:'Recyclable'},{k:'useless',name:'Useless'}];
 const COL={parking:'#34e27a',bank:'#ffd21f',trash:'#ff5a6e',recyclable:'#2bd4ff',useless:'#ff5a6e'};
-const KEY='idea-bank-v1';
+const KEY='headprint-v1';
 const RM=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const $=s=>document.querySelector(s);
 const NS='http://www.w3.org/2000/svg';
@@ -260,7 +266,7 @@ let ideas=[],filter='all',reId=null;
 function enc(o){return btoa(unescape(encodeURIComponent(JSON.stringify(o))))}
 function dec(s){return JSON.parse(decodeURIComponent(escape(atob(s))))}
 function save(){try{localStorage.setItem(KEY,enc(ideas))}catch(e){}}
-function load(){try{const r=localStorage.getItem(KEY);if(r){try{ideas=dec(r)}catch(e){ideas=JSON.parse(r)}return}}catch(e){}ideas=seed();save()}
+function load(){try{let r=localStorage.getItem(KEY);if(!r){const old=localStorage.getItem('idea-bank-v1');if(old){r=old;localStorage.setItem(KEY,old);localStorage.removeItem('idea-bank-v1')}}if(r){try{ideas=dec(r)}catch(e){ideas=JSON.parse(r)}return}}catch(e){}ideas=seed();save()}
 function uid(){return Math.random().toString(36).slice(2,10)}
 function seed(){
  const D=864e5,now=Date.now();
@@ -448,7 +454,12 @@ $('#list').addEventListener('click',e=>{const r=e.target.closest('[data-re]'),d=
 document.querySelectorAll('.zone').forEach(z=>{const go=()=>{filter=filter===z.dataset.zone?'all':z.dataset.zone;render();$('.ledger').scrollIntoView({behavior:RM?'auto':'smooth',block:'start'})};
  z.addEventListener('click',go);z.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();go()}})});
 $('#filters').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;filter=b.dataset.f;render()});
-$('#reset').addEventListener('click',()=>{ideas=[];save();endReentry();render()});
+$('#reset').addEventListener('click',()=>{if(ideas.length&&!confirm('Clear all '+ideas.length+' ideas? This cannot be undone. Export a backup first if you want to keep them.'))return;ideas=[];save();endReentry();render();setHint('Cleared. Starting empty.')});
+function download(name,text){const b=new Blob([text],{type:'application/json'});const u=URL.createObjectURL(b);const a=document.createElement('a');a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),1500)}
+$('#export').addEventListener('click',()=>{const d=new Date().toISOString().slice(0,10);download('headprint-backup-'+d+'.json',JSON.stringify({app:'headprint',version:1,exported:new Date().toISOString(),ideas},null,2));setHint('Backup downloaded ('+ideas.length+' ideas).')});
+$('#import').addEventListener('click',()=>$('#importFile').click());
+$('#importFile').addEventListener('change',e=>{const f=e.target.files&&e.target.files[0];if(!f){return}const rd=new FileReader();rd.onload=()=>{try{const data=JSON.parse(rd.result);const arr=Array.isArray(data)?data:data&&data.ideas;if(!Array.isArray(arr))throw 0;const clean=arr.filter(x=>x&&typeof x.text==='string'&&x.zone).map(x=>{const at=x.created||Date.now();return{id:x.id||uid(),text:String(x.text),zone:x.zone,sub:(x.sub===undefined?null:x.sub),created:at,cycles:x.cycles||0,history:(Array.isArray(x.history)&&x.history.length)?x.history:[{zone:x.zone,sub:(x.sub===undefined?null:x.sub),at}]}});if(!clean.length)throw 0;if(ideas.length&&!confirm('Import '+clean.length+' ideas? This replaces your current '+ideas.length+'.')){return}ideas=clean;save();endReentry();filter='all';render();setHint('Imported '+clean.length+' ideas from backup.')}catch(err){setHint('That file is not a valid HeadPrint backup.',true)}finally{e.target.value=''}};rd.readAsText(f)});
+if('serviceWorker' in navigator){addEventListener('load',()=>{navigator.serviceWorker.register('sw.js').catch(()=>{})})}
 function setView(v){const M={map:'#mapView',dash:'#dashView',about:'#aboutView'};for(const k in M)$(M[k]).hidden=k!==v;$('#vMap').setAttribute('aria-pressed',v==='map');$('#vDash').setAttribute('aria-pressed',v==='dash');$('#vAbout').setAttribute('aria-pressed',v==='about')}
 $('#vMap').addEventListener('click',()=>setView('map'));$('#vDash').addEventListener('click',()=>setView('dash'));$('#vAbout').addEventListener('click',()=>setView('about'));
 

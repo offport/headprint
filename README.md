@@ -1,4 +1,4 @@
-# 💡 IDEA//BANK
+# 💡 HeadPrint
 
 A single-page, static app for catching the ideas and thoughts that run through your
 head, deciding what each one is worth in one quick pass, and acting on that:
@@ -6,9 +6,9 @@ head, deciding what each one is worth in one quick pass, and acting on that:
 a home, your mind can stop carrying it.
 
 No account, no sign-in, no server. The page is just HTML, CSS and JavaScript; every
-idea you file is saved in your own browser.
+idea you file is saved in your own browser. It installs as an app and works offline.
 
-**Hosted at:** https://offport.github.io/idea-bank/
+**Hosted at:** https://offport.github.io/headprint/
 
 ## 🗺️ The three places
 
@@ -25,7 +25,7 @@ creating a duplicate, so the per-day stats never double-count.
 
 ## 🧠 Why this helps
 
-IDEA//BANK borrows a few moves from **Cognitive Behavioral Therapy (CBT)**, one of the
+HeadPrint borrows a few moves from **Cognitive Behavioral Therapy (CBT)**, one of the
 most studied talk-therapy toolkits. It isn't therapy, but these small habits are the
 everyday version of what CBT practises.
 
@@ -61,14 +61,31 @@ no secrets of any kind.
 - **🌐 The page is public, your data isn't.** The code is served from a public web
   address (GitHub Pages), but it ships empty. What you type never leaves your browser,
   and nothing you enter is ever sent to GitHub or anyone else.
-- **🧹 You're in control.** Clearing your browser data, or the **Clear** button in the
-  app, erases everything. There is no copy anywhere else, so keep your own backup if
-  it matters to you. Your data lives per-browser, so it does not follow you to another
-  device or browser.
+- **🧹 You're in control.** **Export backup** saves your ideas as a JSON file;
+  **Import backup** restores them. **Clear all** erases everything, as does clearing
+  your browser data. Your data lives per-browser, so use a backup to move it to
+  another device or browser.
+
+## 💾 Backup & restore
+
+Your data lives only in this browser. Use the buttons under the idea list:
+
+- **⤓ Export backup** downloads `headprint-backup-YYYY-MM-DD.json` — all your ideas as
+  plain JSON.
+- **⤒ Import backup** reads such a file back in (it replaces what's currently stored,
+  after a confirm).
+
+## 📲 Install & offline
+
+HeadPrint is a Progressive Web App. On a phone, use the browser's **Add to Home
+Screen**; on desktop Chrome/Edge, use the install icon in the address bar. A service
+worker caches the app shell, so it opens and runs with no connection. Your data was
+always local, so nothing about offline use changes where it lives.
 
 ## 🛠️ Running it
 
-Open `index.html` directly, or serve the folder statically:
+Open `index.html` directly, or serve the folder statically (a server is needed for the
+service worker and install to work):
 
 ```bash
 python -m http.server 8080
@@ -77,6 +94,9 @@ python -m http.server 8080
 
 ## ⚙️ Tech
 
-A single `index.html`: no build step, no dependencies, no framework. State is kept in
-`localStorage` as one Base64-encoded JSON blob. Fonts load from Google Fonts; nothing
-else is fetched at runtime. Deployed with GitHub Pages from the `main` branch.
+A single `index.html` with no build step, no dependencies and no framework, plus a
+`manifest.webmanifest`, a `sw.js` service worker and two PNG icons. State is kept in
+`localStorage` as one Base64-encoded JSON blob. Fonts load from Google Fonts (cached
+for offline after first load); nothing else is fetched at runtime. Deployed with
+GitHub Pages from the `main` branch. To push a fresh app shell to returning visitors,
+bump the `CACHE` version in `sw.js`.
