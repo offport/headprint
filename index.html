@@ -7,6 +7,7 @@
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 26 26'><polygon points='13,2 24,22 2,22' fill='none' stroke='%23ffd21f' stroke-width='2'/><circle cx='13' cy='15' r='3' fill='%23ffd21f'/></svg>">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#0c2d57">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="HeadPrint">
@@ -158,7 +159,7 @@ ul.ideas{list-style:none;margin:0;padding:0;display:grid;gap:8px}
     </section>
     <section class="panel zone bank" data-zone="bank" tabindex="0" aria-label="Bank">
       <div class="zh"><h2>Bank</h2><span class="big" id="nBank">0</span></div>
-      <div class="zsub">Mind and soul at the core. Body, finance and career in the vault.</div>
+      <div class="zsub">Mind, soul and body at the core. Finance and career in the vault.</div>
       <svg id="bankSvg" viewBox="0 0 300 262" role="img" aria-label="Bank with lettered accounts"></svg>
     </section>
     <section class="panel zone trash" data-zone="trash" tabindex="0" aria-label="Trash bin">
@@ -179,7 +180,7 @@ ul.ideas{list-style:none;margin:0;padding:0;display:grid;gap:8px}
       </div>
     </div>
     <ul class="ideas" id="list"></ul>
-    <div class="foot"><button id="export">⤓ Export backup</button><button id="import">⤒ Import backup</button><button id="reset">Clear all</button><input id="importFile" type="file" accept="application/json,.json" hidden></div>
+    <div class="foot"><button id="export">⤓ Export backup</button><button id="import">⤒ Import backup</button><button id="flush">↺ Flush to samples</button><button id="reset">Clear all</button><input id="importFile" type="file" accept="application/json,.json" hidden></div>
   </section>
 </main>
 
@@ -253,8 +254,10 @@ ul.ideas{list-style:none;margin:0;padding:0;display:grid;gap:8px}
 
 <script>
 const ACCTS=[
- {k:'M',name:'Mind',note:'incl. intellect'},{k:'S',name:'Soul'},
- {k:'B',name:'Body'},{k:'F',name:'Financial'},{k:'C',name:'Career'}];
+ {k:'mind',name:'Mind',core:true},{k:'soul',name:'Soul',core:true},{k:'body',name:'Body',core:true},
+ {k:'financial',name:'Financial'},{k:'career',name:'Career'}];
+const SUBMAP={M:'mind',I:'mind',S:'soul',B:'body',F:'financial',C:'career'};
+function remap(a){const m=s=>s==null?null:(SUBMAP[s]||s);a.forEach(i=>{i.sub=m(i.sub);if(Array.isArray(i.history))i.history.forEach(h=>{h.sub=m(h.sub)})});return a}
 const TRASH=[{k:'recyclable',name:'Recyclable'},{k:'useless',name:'Useless'}];
 const COL={parking:'#34e27a',bank:'#ffd21f',trash:'#ff5a6e',recyclable:'#2bd4ff',useless:'#ff5a6e'};
 const KEY='headprint-v1';
@@ -266,30 +269,30 @@ let ideas=[],filter='all',reId=null;
 function enc(o){return btoa(unescape(encodeURIComponent(JSON.stringify(o))))}
 function dec(s){return JSON.parse(decodeURIComponent(escape(atob(s))))}
 function save(){try{localStorage.setItem(KEY,enc(ideas))}catch(e){}}
-function load(){try{let r=localStorage.getItem(KEY);if(!r){const old=localStorage.getItem('idea-bank-v1');if(old){r=old;localStorage.setItem(KEY,old);localStorage.removeItem('idea-bank-v1')}}if(r){try{ideas=dec(r)}catch(e){ideas=JSON.parse(r)}return}}catch(e){}ideas=seed();save()}
+function load(){try{let r=localStorage.getItem(KEY);if(!r){const old=localStorage.getItem('idea-bank-v1');if(old){r=old;localStorage.setItem(KEY,old);localStorage.removeItem('idea-bank-v1')}}if(r){try{ideas=dec(r)}catch(e){ideas=JSON.parse(r)}ideas=remap(ideas);save();return}}catch(e){}ideas=seed();save()}
 function uid(){return Math.random().toString(36).slice(2,10)}
 function seed(){
  const D=864e5,now=Date.now();
  const s=[
-  ['Take a morning walk without my phone to clear my head','bank','M',0],
-  ['Offer a monthly security check-up to local shops','bank','C',0],
+  ['Take a morning walk without my phone to clear my head','bank','mind',0],
+  ['Offer a monthly security check-up to local shops','bank','career',0],
   ['Sell the old monitor','parking',null,0],
-  ['Read one chapter before sleep every night','bank','M',1],
+  ['Read one chapter before sleep every night','bank','mind',1],
   ['Buy a lottery ticket every day','trash','useless',1],
-  ['Learn how options work before touching them','bank','F',2],
+  ['Learn how options work before touching them','bank','financial',2],
   ['Start a podcast on cyber security for small business','parking',null,2],
   ['I never finish my side projects','trash','recyclable',3],
-  ['Gym four times a week with progress photos','bank','B',3],
-  ['Write down three things I am grateful for','bank','S',4],
+  ['Gym four times a week with progress photos','bank','body',3],
+  ['Write down three things I am grateful for','bank','soul',4],
   ['Build a 3D tour of the new apartment','parking',null,5],
   ['Quit everything and start over from zero','trash','recyclable',6],
-  ['Automate my monthly budget report','bank','F',6],
+  ['Automate my monthly budget report','bank','financial',6],
  ];
  return s.map(([t,z,sub,d])=>{const at=now-d*D-Math.floor(Math.random()*6e6);return{id:uid(),text:t,zone:z,sub,created:at,cycles:0,history:[{zone:z,sub,at}]}});
 }
 
 function acctName(k){const a=ACCTS.find(a=>a.k===k);return a?a.name:k}
-function tagLabel(i){if(i.zone==='bank')return i.sub+' · '+acctName(i.sub);if(i.zone==='trash')return i.sub==='recyclable'?'Recyclable':'Useless';return 'Parking'}
+function tagLabel(i){if(i.zone==='bank')return acctName(i.sub);if(i.zone==='trash')return i.sub==='recyclable'?'Recyclable':'Useless';return 'Parking'}
 function color(i){return i.zone==='trash'?COL[i.sub]:COL[i.zone]}
 function esc(s){return s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
 function ago(t){const m=Math.round((Date.now()-t)/6e4);if(m<1)return'just now';if(m<60)return m+'m ago';const h=Math.round(m/60);if(h<24)return h+'h ago';const d=Math.round(h/24);return d===1?'yesterday':d+' days ago'}
@@ -313,19 +316,18 @@ function buildBank(){
  [30,258].forEach(x=>{el('rect',{x,y:68,width:12,height:166,fill:'none',stroke:'rgba(255,212,81,.55)'},s);for(let k=1;k<3;k++)el('line',{x1:x+k*4,y1:70,x2:x+k*4,y2:232,stroke:'rgba(255,212,81,.3)'},s)});
  el('rect',{x:14,y:234,width:272,height:10,fill:'rgba(255,212,81,.06)',stroke:'rgba(255,212,81,.55)'},s);
  el('rect',{x:6,y:244,width:288,height:10,fill:'rgba(255,212,81,.06)',stroke:'rgba(255,212,81,.55)'},s);
- const P={M:[112,135],S:[188,135]};
- el('line',{x1:P.M[0],y1:P.M[1],x2:P.S[0],y2:P.S[1],stroke:'#ffd21f','stroke-dasharray':'4 4','stroke-opacity':.7},s);
- ['M','S'].forEach(k=>{const[x,y]=P[k];const g=el('g',{id:'acct-'+k,class:'acct'},s);
+ const P={mind:[150,104],soul:[104,170],body:[196,170]};
+ el('polygon',{points:`${P.mind} ${P.soul} ${P.body}`,fill:'rgba(255,212,81,.05)',stroke:'#ffd21f','stroke-dasharray':'4 4','stroke-opacity':.7},s);
+ ['mind','soul','body'].forEach(k=>{const[x,y]=P[k];const g=el('g',{id:'acct-'+k,class:'acct'},s);
   const t=el('title',{},g);t.textContent=acctName(k);
-  el('circle',{cx:x,cy:y,r:22,class:'node','stroke-width':1.5},g);
-  txt(x,y-6,k,{'font-size':17,'font-weight':600,class:'lt'},g);
-  txt(x,y+10,'0',{'font-size':11,class:'nt',fill:'#8fb3dc'},g);});
- ['B','F','C'].forEach((k,i)=>{const x=58+i*64,y=198;const g=el('g',{id:'acct-'+k,class:'acct'},s);
+  el('circle',{cx:x,cy:y,r:28,class:'node','stroke-width':1.5},g);
+  txt(x,y-6,acctName(k),{'font-size':13,'font-weight':600,class:'lt'},g);
+  txt(x,y+12,'0',{'font-size':12,class:'nt',fill:'#8fb3dc'},g);});
+ [['financial',46],['career',154]].forEach(([k,x])=>{const y=200,w=100,g=el('g',{id:'acct-'+k,class:'acct'},s);
   const t=el('title',{},g);t.textContent=acctName(k);
-  el('rect',{x,y,width:56,height:32,rx:2,class:'node','stroke-width':1.5},g);
-  el('circle',{cx:x+44,cy:y+16,r:3,fill:'none',stroke:'rgba(255,212,81,.55)'},g);
-  txt(x+14,y+16,k,{'font-size':16,'font-weight':600,class:'lt'},g);
-  txt(x+29,y+16,'0',{'font-size':12,class:'nt',fill:'#8fb3dc'},g);});
+  el('rect',{x,y,width:w,height:34,rx:2,class:'node','stroke-width':1.5},g);
+  txt(x+11,y+17,acctName(k),{'font-size':13,'font-weight':600,class:'lt','text-anchor':'start'},g);
+  txt(x+w-11,y+17,'0',{'font-size':12,class:'nt','text-anchor':'end',fill:'#8fb3dc'},g);});
 }
 function buildTrash(){
  const s=$('#trashSvg');s.innerHTML='';
@@ -390,7 +392,7 @@ function renderDash(){
   const tot=r.g+r.p+r.n;if(tot)txt(x+bw/2,y-12,String(tot),{'font-size':14,fill:'#e8f1ff','font-weight':600},s);
   txt(x+bw/2,y1+22,i===6?'Today':r.t.toLocaleDateString(undefined,{weekday:'short'}),{'font-size':15,fill:'#8fb3dc'},s);});
  const am=Math.max(1,...ACCTS.map(a=>bank.filter(i=>i.sub===a.k).length));
- $('#acctBars').innerHTML=ACCTS.map(a=>{const n=bank.filter(i=>i.sub===a.k).length;return`<div class="hbar"><b style="color:var(--bank)">${a.k}</b><div><small>${a.name}${a.note?' ('+a.note+')':''}</small><div class="t"><i style="width:${n/am*100}%;--hc:var(--bank)"></i></div></div><em>${n}</em></div>`}).join('');
+ $('#acctBars').innerHTML=ACCTS.map(a=>{const n=bank.filter(i=>i.sub===a.k).length;return`<div class="hbar"><b style="color:var(--bank)">▪</b><div><small>${a.name}</small><div class="t"><i style="width:${n/am*100}%;--hc:var(--bank)"></i></div></div><em>${n}</em></div>`}).join('');
  const tm=Math.max(1,trash.length);
  $('#trashBars').innerHTML=TRASH.map(t=>{const n=trash.filter(i=>i.sub===t.k).length;return`<div class="hbar"><b style="color:${COL[t.k]}">${t.k==='recyclable'?'↻':'✕'}</b><div><small>${t.name}</small><div class="t"><i style="width:${n/tm*100}%;--hc:${COL[t.k]}"></i></div></div><em>${n}</em></div>`}).join('');
 }
@@ -399,7 +401,7 @@ const cat=$('#cat'),sub=$('#sub'),ta=$('#txt'),hint=$('#hint');
 function setHint(m,err){hint.textContent=m;hint.classList.toggle('err',!!err)}
 function defaultHint(){const c=cat.value;setHint(c===''?'No tag sends the idea straight to Parking.':c==='bank'?'Pick the account this idea belongs to.':c==='trash'?'Recyclable ideas can be reworked and sent back into the loop.':'Parked ideas wait here until you decide.')}
 cat.addEventListener('change',()=>{const c=cat.value;
- if(c==='bank'){sub.innerHTML='<option value="">Choose account</option>'+ACCTS.map(a=>`<option value="${a.k}">${a.k} · ${a.name}</option>`).join('');sub.hidden=false}
+ if(c==='bank'){sub.innerHTML='<option value="">Choose account</option>'+ACCTS.map(a=>`<option value="${a.k}">${a.name}</option>`).join('');sub.hidden=false}
  else if(c==='trash'){sub.innerHTML='<option value="">Choose bin</option>'+TRASH.map(t=>`<option value="${t.k}">${t.name}</option>`).join('');sub.hidden=false}
  else{sub.innerHTML='';sub.hidden=true}
  defaultHint();});
@@ -437,7 +439,7 @@ async function fileIdea(){
  save();
  if(zone==='trash'){const zt=document.querySelector('.zone.trash');zt.classList.add('lidopen')}
  const preTarget=zone==='parking'?null:target(zone,s);
- const lbl=(zone==='bank'?s+' · ':'')+text;
+ const lbl=(zone==='bank'?acctName(s)+' · ':'')+text;
  if(zone==='parking'){render();await fly($('#car-'+idea.id)||$('#parkSvg'),COL.parking,lbl)}
  else{await fly(preTarget,color(idea),lbl);render()}
  pulse(zone);
@@ -455,6 +457,7 @@ document.querySelectorAll('.zone').forEach(z=>{const go=()=>{filter=filter===z.d
  z.addEventListener('click',go);z.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();go()}})});
 $('#filters').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;filter=b.dataset.f;render()});
 $('#reset').addEventListener('click',()=>{if(ideas.length&&!confirm('Clear all '+ideas.length+' ideas? This cannot be undone. Export a backup first if you want to keep them.'))return;ideas=[];save();endReentry();render();setHint('Cleared. Starting empty.')});
+$('#flush').addEventListener('click',()=>{if(ideas.length&&!confirm('Flush all '+ideas.length+' ideas and restore the default samples? Your current ideas will be replaced.'))return;ideas=seed();save();endReentry();filter='all';render();setHint('Flushed. Default sample ideas restored.')});
 function download(name,text){const b=new Blob([text],{type:'application/json'});const u=URL.createObjectURL(b);const a=document.createElement('a');a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),1500)}
 $('#export').addEventListener('click',()=>{const d=new Date().toISOString().slice(0,10);download('headprint-backup-'+d+'.json',JSON.stringify({app:'headprint',version:1,exported:new Date().toISOString(),ideas},null,2));setHint('Backup downloaded ('+ideas.length+' ideas).')});
 $('#import').addEventListener('click',()=>$('#importFile').click());

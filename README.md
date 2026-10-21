@@ -13,7 +13,7 @@ idea you file is saved in your own browser. It installs as an app and works offl
 ## 🗺️ The three places
 
 - **🏦 Bank** — ideas worth keeping, filed under the part of life they serve:
-  Mind (incl. intellect), Soul, Body, Financial, Career.
+  Mind, Soul and Body at the core, plus Financial and Career in the vault.
 - **🅿️ Parking** — not sure yet? Park it. It waits without nagging, and you can pull
   it back into the loop whenever you want. No tag at all sends an idea here
   automatically.
