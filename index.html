@@ -1,0 +1,458 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Idea Bank</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 26 26'><polygon points='13,2 24,22 2,22' fill='none' stroke='%23ffd21f' stroke-width='2'/><circle cx='13' cy='15' r='3' fill='%23ffd21f'/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600&family=Barlow:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--void:#0c2d57;--panel:rgba(9,27,54,.66);--panel2:rgba(255,255,255,.08);--line:rgba(255,255,255,.3);--line2:rgba(255,255,255,.5);--kr:#eaf2ff;--kr2:#9ec5ef;--bank:#ffd21f;--park:#34e27a;--text:#e8f1ff;--muted:#8fb3dc;--amber:#f4c361;--cyan:#2bd4ff;--red:#ff5a6e;--hud:'Chakra Petch',system-ui,sans-serif}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--void);color:var(--text);font-family:'Barlow',system-ui,sans-serif;font-size:16px;line-height:1.5;min-height:100vh;
+background-image:linear-gradient(rgba(255,255,255,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.06) 1px,transparent 1px),linear-gradient(rgba(255,255,255,.12) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.12) 1px,transparent 1px);background-size:20px 20px,20px 20px,100px 100px,100px 100px}
+.wrap{max-width:1200px;margin:0 auto;padding:16px 16px 48px}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:6px 0 18px;flex-wrap:wrap}
+.mark{font-family:var(--hud);font-weight:600;font-size:22px;letter-spacing:.06em;color:var(--kr);display:flex;align-items:center;gap:10px}
+.mark svg{width:26px;height:26px}
+.mark small{font-weight:400;font-size:13px;color:var(--muted);letter-spacing:0}
+.views{display:flex;border:1px solid var(--line2);border-radius:4px;overflow:hidden}
+.views button{font-family:var(--hud);font-size:14px;background:transparent;color:var(--muted);border:0;padding:8px 16px;cursor:pointer}
+.views button[aria-pressed="true"]{background:rgba(234,242,255,.14);color:var(--kr)}
+button:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--kr);outline-offset:2px}
+.panel{position:relative;background:var(--panel);border:1px solid var(--line);padding:16px;border-radius:2px}
+.panel::before,.panel::after{content:"";position:absolute;width:14px;height:14px;border:2px solid var(--zc,var(--kr));pointer-events:none}
+.panel::before{top:-1px;left:-1px;border-right:0;border-bottom:0}
+.panel::after{bottom:-1px;right:-1px;border-left:0;border-top:0}
+h2{font-family:var(--hud);font-weight:500;font-size:18px;margin:0;letter-spacing:.02em}
+.composer{--zc:var(--kr);margin-bottom:20px}
+.reentry{display:none;align-items:center;justify-content:space-between;gap:8px;font-size:14px;color:var(--cyan);border:1px dashed var(--cyan);padding:6px 10px;margin-bottom:10px}
+.reentry.on{display:flex}
+.reentry button{background:none;border:0;color:var(--muted);cursor:pointer;font-size:14px;text-decoration:underline}
+textarea{width:100%;min-height:84px;resize:vertical;background:var(--void);color:var(--text);border:1px solid var(--line2);border-radius:2px;padding:12px;font:inherit;font-size:17px}
+textarea::placeholder{color:#5c82ad}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:10px}
+select{background:var(--void);color:var(--text);border:1px solid var(--line2);border-radius:2px;padding:9px 10px;font:inherit;font-size:16px;min-width:150px}
+.count{font-family:var(--hud);font-size:13px;color:var(--muted);margin-left:auto}
+.count.warn{color:var(--amber)}
+.file{font-family:var(--hud);font-weight:600;font-size:15px;background:var(--kr);color:#0c2d57;border:0;border-radius:2px;padding:10px 20px;cursor:pointer}
+.file:hover{background:#ffffff}
+.hint{font-size:13px;color:var(--muted);margin-top:8px;min-height:20px}
+.err{color:var(--red)}
+.zones{display:grid;grid-template-columns:1fr 1.25fr 1fr;gap:16px;align-items:stretch}
+.zone{display:flex;flex-direction:column;cursor:pointer}
+.zone.parking{--zc:var(--park)} .zone.bank{--zc:var(--bank)} .zone.trash{--zc:var(--red)}
+.zone.sel{border-color:var(--zc)}
+.zh{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px}
+.zh h2{color:var(--zc)}
+.big{font-family:var(--hud);font-weight:600;font-size:34px;line-height:1;color:var(--zc)}
+.zsub{font-size:13px;color:var(--muted);margin-bottom:8px;min-height:20px}
+.zone svg{width:100%;height:auto;display:block;margin:auto 0}
+.hit{animation:hit .8s ease-out}
+@keyframes hit{0%{filter:drop-shadow(0 0 0 transparent)}35%{filter:drop-shadow(0 0 14px var(--zc))}100%{filter:drop-shadow(0 0 0 transparent)}}
+#lid{transform-box:fill-box;transform-origin:0% 100%;transition:transform .35s ease}
+.lidopen #lid{transform:rotate(-24deg)}
+.ledger{margin-top:20px}
+.lh{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.filters{display:flex;gap:6px;flex-wrap:wrap}
+.filters button{font-family:var(--hud);font-size:13px;background:transparent;border:1px solid var(--line2);color:var(--muted);padding:5px 10px;border-radius:2px;cursor:pointer}
+.filters button[aria-pressed="true"]{color:var(--kr);border-color:var(--kr)}
+ul.ideas{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.idea{display:grid;grid-template-columns:4px 1fr auto;gap:12px;background:var(--panel2);border:1px solid var(--line);padding:10px 12px 10px 0}
+.idea .bar{background:var(--ic)}
+.idea p{margin:0 0 4px;font-size:16px}
+.meta{display:flex;gap:8px;flex-wrap:wrap;align-items:center;font-size:12px;color:var(--muted)}
+.tag{font-family:var(--hud);font-size:12px;color:var(--ic);border:1px solid var(--ic);padding:0 6px;border-radius:2px}
+.cyc{color:var(--cyan)}
+.acts{display:flex;gap:6px;align-items:flex-start}
+.acts button{font-family:var(--hud);font-size:12px;background:transparent;border:1px solid var(--line2);color:var(--text);padding:4px 8px;border-radius:2px;cursor:pointer;white-space:nowrap}
+.acts .re{color:var(--cyan);border-color:var(--cyan)}
+.acts .del{color:var(--muted)}
+.empty{color:var(--muted);font-size:14px;padding:12px 0}
+.foot{display:flex;justify-content:flex-end;margin-top:10px}
+.foot button{background:none;border:0;color:var(--muted);font-size:13px;text-decoration:underline;cursor:pointer}
+.chip{position:fixed;z-index:50;pointer-events:none;font-family:var(--hud);font-weight:600;font-size:14px;color:#0c2d57;background:var(--cc);padding:6px 10px;border-radius:2px;max-width:220px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;box-shadow:0 0 18px var(--cc)}
+.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:16px}
+.stat{--zc:var(--sc)}
+.stat .big{color:var(--sc);font-size:30px}
+.stat span{display:block;font-size:13px;color:var(--muted);margin-top:4px}
+.dgrid{display:grid;grid-template-columns:1.6fr 1fr;gap:16px}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:13px;color:var(--muted);margin:8px 0 4px}
+.legend i{display:inline-block;width:10px;height:10px;margin-right:6px;background:var(--lc)}
+.hbar{display:grid;grid-template-columns:28px 1fr 30px;gap:10px;align-items:center;margin:9px 0;font-size:14px}
+.hbar b{font-family:var(--hud);color:var(--kr);font-weight:600}
+.hbar .t{height:10px;background:var(--line);position:relative}
+.hbar .t i{position:absolute;inset:0 auto 0 0;background:var(--hc,var(--kr))}
+.hbar em{font-style:normal;font-family:var(--hud);text-align:right;color:var(--muted)}
+.hbar small{display:block;color:var(--muted);font-size:12px}
+.about{max-width:880px;margin:0 auto}
+.atitle{font-family:var(--hud);font-weight:500;font-size:22px;color:var(--kr);margin:24px 0 8px;letter-spacing:.02em}
+.about .atitle:first-child{margin-top:2px}
+.lead{font-size:17px;color:var(--text);margin:0 0 14px}
+.acards{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:12px 0 4px}
+.acard{border:1px solid var(--line);border-left:3px solid var(--ac);background:var(--panel2);padding:12px 14px}
+.acard h3{font-family:var(--hud);font-size:16px;margin:0 0 6px;color:var(--ac);font-weight:600}
+.acard p{margin:0;font-size:14px;color:var(--text)}
+.why{list-style:none;padding:0;margin:6px 0 10px;display:grid;gap:10px}
+.why li{font-size:16px;line-height:1.55;border-left:2px solid var(--line2);padding:3px 0 3px 14px}
+.isnt{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:16px 0 4px}
+.col{border:1px solid var(--line);background:var(--panel2);padding:12px 16px}
+.col h3{font-family:var(--hud);font-size:16px;margin:0 0 8px;font-weight:600}
+.col.is h3{color:var(--bank)} .col.isnt-x h3{color:var(--red)}
+.col ul{margin:0;padding-left:18px;display:grid;gap:6px}
+.col li{font-size:14px;color:var(--text)}
+.note{font-size:14px;color:var(--muted);border-top:1px solid var(--line);padding-top:12px;margin-top:18px}
+@media (max-width:760px){.acards{grid-template-columns:1fr}.isnt{grid-template-columns:1fr}}
+[hidden]{display:none!important}
+@media (max-width:860px){.zones{grid-template-columns:1fr}.dgrid{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,1fr)}.stats .stat:first-child{grid-column:span 2}}
+@media (max-width:560px){.wrap{padding:12px 14px 40px}header{gap:8px 10px;padding-bottom:14px}.mark{font-size:19px}.mark small{display:none}.views{width:100%}.views button{flex:1;padding:9px 6px;text-align:center}.atitle{font-size:20px}.lead{font-size:16px}.big{font-size:30px}.idea{grid-template-columns:4px 1fr;row-gap:8px}.idea .bar{grid-row:1/3}.idea .acts{grid-column:2;justify-content:flex-end}}
+@media (prefers-reduced-motion:reduce){.hit{animation:none}#lid{transition:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div class="mark">
+    <svg viewBox="0 0 26 26" aria-hidden="true"><polygon points="13,2 24,22 2,22" fill="none" stroke="#ffd21f" stroke-width="2"/><circle cx="13" cy="15" r="3" fill="#ffd21f"/></svg>
+    IDEA//BANK <small>park it, bank it, or bin it</small>
+  </div>
+  <div class="views" role="group" aria-label="View">
+    <button id="vMap" aria-pressed="true">Map</button>
+    <button id="vDash" aria-pressed="false">Dashboard</button>
+    <button id="vAbout" aria-pressed="false">About</button>
+  </div>
+</header>
+
+<section class="panel composer" aria-label="New idea">
+  <div class="reentry" id="reentry"><span>↻ Re-entering an idea. Give it a new tag to refile it.</span><button id="cancelRe">Cancel</button></div>
+  <label for="txt" class="hint" style="display:block;margin:0 0 6px;color:var(--text)">What's the idea? One or two sentences.</label>
+  <textarea id="txt" maxlength="280" placeholder="e.g. Offer a monthly security check-up to local shops"></textarea>
+  <div class="row">
+    <select id="cat" aria-label="Category">
+      <option value="">No tag: park it</option>
+      <option value="bank">Bank</option>
+      <option value="parking">Parking</option>
+      <option value="trash">Trash bin</option>
+    </select>
+    <select id="sub" aria-label="Subcategory" hidden></select>
+    <span class="count" id="cnt">0 / 280</span>
+    <button class="file" id="fileBtn">File idea</button>
+  </div>
+  <div class="hint" id="hint">No tag sends the idea straight to Parking.</div>
+</section>
+
+<main id="mapView">
+  <div class="zones">
+    <section class="panel zone parking" data-zone="parking" tabindex="0" aria-label="Parking">
+      <div class="zh"><h2>Parking</h2><span class="big" id="nPark">0</span></div>
+      <div class="zsub" id="parkSub">Ideas waiting for a decision</div>
+      <svg id="parkSvg" viewBox="0 0 300 210" role="img" aria-label="Car park with parked ideas"></svg>
+    </section>
+    <section class="panel zone bank" data-zone="bank" tabindex="0" aria-label="Bank">
+      <div class="zh"><h2>Bank</h2><span class="big" id="nBank">0</span></div>
+      <div class="zsub">Mind and soul at the core. Body, finance and career in the vault.</div>
+      <svg id="bankSvg" viewBox="0 0 300 262" role="img" aria-label="Bank with lettered accounts"></svg>
+    </section>
+    <section class="panel zone trash" data-zone="trash" tabindex="0" aria-label="Trash bin">
+      <div class="zh"><h2>Trash bin</h2><span class="big" id="nTrash">0</span></div>
+      <div class="zsub">Recyclable ideas can go back into the loop</div>
+      <svg id="trashSvg" viewBox="0 0 220 250" role="img" aria-label="Trash bin split into recyclable and useless"></svg>
+    </section>
+  </div>
+
+  <section class="panel ledger" aria-label="Ideas">
+    <div class="lh">
+      <h2 id="lTitle">All ideas</h2>
+      <div class="filters" id="filters">
+        <button data-f="all" aria-pressed="true">All</button>
+        <button data-f="parking" aria-pressed="false">Parking</button>
+        <button data-f="bank" aria-pressed="false">Bank</button>
+        <button data-f="trash" aria-pressed="false">Trash</button>
+      </div>
+    </div>
+    <ul class="ideas" id="list"></ul>
+    <div class="foot"><button id="reset">Clear sample ideas and start empty</button></div>
+  </section>
+</main>
+
+<main id="dashView" hidden>
+  <div class="stats" id="stats"></div>
+  <div class="dgrid">
+    <section class="panel">
+      <h2>Ideas per day</h2>
+      <div class="legend"><span><i style="--lc:var(--bank)"></i>Good (banked)</span><span><i style="--lc:var(--park)"></i>Parked</span><span><i style="--lc:var(--red)"></i>Negative (trash)</span></div>
+      <svg id="daySvg" viewBox="0 0 460 250" role="img" aria-label="Ideas per day for the last 7 days" style="width:100%;height:auto;display:block"></svg>
+    </section>
+    <section class="panel">
+      <h2>Bank accounts</h2>
+      <div id="acctBars"></div>
+      <h2 style="margin-top:18px">Trash bin</h2>
+      <div id="trashBars"></div>
+    </section>
+  </div>
+</main>
+
+<main id="aboutView" hidden>
+  <section class="panel about">
+    <h2 class="atitle">💡 What is IDEA//BANK?</h2>
+    <p class="lead">Your head is noisy. IDEA//BANK is a quiet place to catch each idea or thought as it turns up, decide what it's worth in one quick pass, and act on that: <b>bank</b> the good ones, <b>park</b> the maybes, and <b>bin</b> the rest. Once a thought has a home, your mind can stop carrying it.</p>
+    <div class="acards">
+      <div class="acard" style="--ac:var(--bank)"><h3>🏦 Bank</h3><p>Ideas worth keeping, filed under the part of life they serve: Mind, Soul, Body, Financial, Career.</p></div>
+      <div class="acard" style="--ac:var(--park)"><h3>🅿️ Parking</h3><p>Not sure yet? Park it. It waits without nagging, and you can pull it back into the loop whenever you want.</p></div>
+      <div class="acard" style="--ac:var(--red)"><h3>🗑️ Trash</h3><p>♻️ Recyclable: a negative thought you can rework into something useful. ✕ Useless: let it go for good.</p></div>
+    </div>
+
+    <h2 class="atitle">🧠 Why this helps</h2>
+    <p class="lead">IDEA//BANK borrows a few moves from <b>Cognitive Behavioral Therapy</b> (CBT), one of the most studied talk-therapy toolkits. It isn't therapy, but these small habits are the everyday version of what CBT practises.</p>
+    <ul class="why">
+      <li>✍️ <b>Get it out of your head.</b> An unfinished thought keeps tugging for attention, an old finding known as the Zeigarnik effect. Writing it into a place you trust to revisit lets your mind stop rehearsing it.</li>
+      <li>🏷️ <b>Name it to tame it.</b> Tagging a thought and filing it puts a step between you and it. CBT calls this externalizing: you begin to see a thought as a thought, not a fact.</li>
+      <li>♻️ <b>Reframe instead of ruminate.</b> The Recyclable bin is a tiny thought record. Instead of looping on "I never finish anything," you catch it, weigh it, and rework it into something fairer. CBT's aim isn't happy thoughts, it's accurate ones.</li>
+      <li>🅿️ <b>Park the maybes.</b> Putting an undecided thought off until later is "worry postponement," a common CBT step that eases the pressure to decide right now, so one thought stops owning the hour.</li>
+      <li>🗑️ <b>Let the useless go.</b> Not every thought earns your time. Choosing to bin one is a small, deliberate act of letting go.</li>
+      <li>🎯 <b>See where your head goes.</b> Sorting ideas by life area shows you where your attention actually lands, so you can spend it on purpose.</li>
+    </ul>
+
+    <div class="isnt">
+      <div class="col is"><h3>✅ What it is</h3><ul>
+        <li>A fast catcher for ideas and passing thoughts</li>
+        <li>A calm place to sort, keep, and let go</li>
+        <li>A CBT-inspired daily habit</li>
+        <li>Private by default: everything stays in your browser</li>
+        <li>A mirror that shows your patterns over time</li>
+      </ul></div>
+      <div class="col isnt-x"><h3>🚫 What it isn't</h3><ul>
+        <li>Not therapy, and not a substitute for a professional</li>
+        <li>Not a diagnosis or a medical tool</li>
+        <li>Not a to-do list or task manager</li>
+        <li>Not a vault that keeps everything forever</li>
+        <li>Not a crisis service</li>
+      </ul></div>
+    </div>
+
+    <h2 class="atitle">🔒 Your data & privacy</h2>
+    <ul class="why">
+      <li>📵 <b>It stays on your device.</b> Every idea is saved only in this browser's local storage. Nothing is uploaded, because there is no server and no account.</li>
+      <li>🧩 <b>Encoded, not encrypted.</b> Your data is stored encoded so it isn't plain text at a glance, but anyone who can use this browser profile can read it. Treat it as private notes on your own device, not a locked vault.</li>
+      <li>🌐 <b>The page is public, your data isn't.</b> The app's code is served from a public web address, but it ships empty. What you type never leaves your browser.</li>
+      <li>🧹 <b>You're in control.</b> Clearing your browser data, or the "Clear" button, erases everything. There is no copy anywhere else, so keep your own backup if it matters to you.</li>
+    </ul>
+
+    <p class="note">💙 This is a self-help tool, not a clinician. If your thoughts feel overwhelming or unsafe, please reach out to a mental-health professional or a local crisis line. You deserve real support, not just an app.</p>
+  </section>
+</main>
+</div>
+
+<script>
+const ACCTS=[
+ {k:'M',name:'Mind',note:'incl. intellect'},{k:'S',name:'Soul'},
+ {k:'B',name:'Body'},{k:'F',name:'Financial'},{k:'C',name:'Career'}];
+const TRASH=[{k:'recyclable',name:'Recyclable'},{k:'useless',name:'Useless'}];
+const COL={parking:'#34e27a',bank:'#ffd21f',trash:'#ff5a6e',recyclable:'#2bd4ff',useless:'#ff5a6e'};
+const KEY='idea-bank-v1';
+const RM=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const $=s=>document.querySelector(s);
+const NS='http://www.w3.org/2000/svg';
+let ideas=[],filter='all',reId=null;
+
+function enc(o){return btoa(unescape(encodeURIComponent(JSON.stringify(o))))}
+function dec(s){return JSON.parse(decodeURIComponent(escape(atob(s))))}
+function save(){try{localStorage.setItem(KEY,enc(ideas))}catch(e){}}
+function load(){try{const r=localStorage.getItem(KEY);if(r){try{ideas=dec(r)}catch(e){ideas=JSON.parse(r)}return}}catch(e){}ideas=seed();save()}
+function uid(){return Math.random().toString(36).slice(2,10)}
+function seed(){
+ const D=864e5,now=Date.now();
+ const s=[
+  ['Take a morning walk without my phone to clear my head','bank','M',0],
+  ['Offer a monthly security check-up to local shops','bank','C',0],
+  ['Sell the old monitor','parking',null,0],
+  ['Read one chapter before sleep every night','bank','M',1],
+  ['Buy a lottery ticket every day','trash','useless',1],
+  ['Learn how options work before touching them','bank','F',2],
+  ['Start a podcast on cyber security for small business','parking',null,2],
+  ['I never finish my side projects','trash','recyclable',3],
+  ['Gym four times a week with progress photos','bank','B',3],
+  ['Write down three things I am grateful for','bank','S',4],
+  ['Build a 3D tour of the new apartment','parking',null,5],
+  ['Quit everything and start over from zero','trash','recyclable',6],
+  ['Automate my monthly budget report','bank','F',6],
+ ];
+ return s.map(([t,z,sub,d])=>{const at=now-d*D-Math.floor(Math.random()*6e6);return{id:uid(),text:t,zone:z,sub,created:at,cycles:0,history:[{zone:z,sub,at}]}});
+}
+
+function acctName(k){const a=ACCTS.find(a=>a.k===k);return a?a.name:k}
+function tagLabel(i){if(i.zone==='bank')return i.sub+' · '+acctName(i.sub);if(i.zone==='trash')return i.sub==='recyclable'?'Recyclable':'Useless';return 'Parking'}
+function color(i){return i.zone==='trash'?COL[i.sub]:COL[i.zone]}
+function esc(s){return s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+function ago(t){const m=Math.round((Date.now()-t)/6e4);if(m<1)return'just now';if(m<60)return m+'m ago';const h=Math.round(m/60);if(h<24)return h+'h ago';const d=Math.round(h/24);return d===1?'yesterday':d+' days ago'}
+function el(tag,attrs,parent){const e=document.createElementNS(NS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);if(parent)parent.appendChild(e);return e}
+function txt(x,y,t,a,p){const e=el('text',Object.assign({x,y,'text-anchor':'middle','dominant-baseline':'central','font-family':"'Chakra Petch',sans-serif"},a),p);e.textContent=t;return e}
+
+function buildParking(){
+ const s=$('#parkSvg');s.innerHTML='';
+ el('rect',{x:1,y:1,width:298,height:208,rx:8,fill:'rgba(255,255,255,.05)',stroke:'rgba(255,255,255,.4)'},s);
+ for(let i=0;i<=6;i++){const x=18+i*45;
+  el('line',{x1:x,y1:14,x2:x,y2:84,stroke:'#34e27a','stroke-opacity':.6,'stroke-width':1.5},s);
+  el('line',{x1:x,y1:126,x2:x,y2:196,stroke:'#34e27a','stroke-opacity':.6,'stroke-width':1.5},s);}
+ el('line',{x1:18,y1:105,x2:288,y2:105,stroke:'#34e27a','stroke-opacity':.4,'stroke-dasharray':'10 8','stroke-width':2},s);
+ el('g',{id:'cars'},s);
+}
+function buildBank(){
+ const s=$('#bankSvg');s.innerHTML='';
+ el('polygon',{points:'150,8 24,56 276,56',fill:'rgba(255,212,81,.08)',stroke:'#ffd21f','stroke-width':1.5},s);
+ el('circle',{cx:150,cy:38,r:7,fill:'none',stroke:'#ffd21f','stroke-width':1.5},s);
+ el('rect',{x:20,y:56,width:260,height:12,fill:'rgba(255,212,81,.08)',stroke:'#ffd21f'},s);
+ [30,258].forEach(x=>{el('rect',{x,y:68,width:12,height:166,fill:'none',stroke:'rgba(255,212,81,.55)'},s);for(let k=1;k<3;k++)el('line',{x1:x+k*4,y1:70,x2:x+k*4,y2:232,stroke:'rgba(255,212,81,.3)'},s)});
+ el('rect',{x:14,y:234,width:272,height:10,fill:'rgba(255,212,81,.06)',stroke:'rgba(255,212,81,.55)'},s);
+ el('rect',{x:6,y:244,width:288,height:10,fill:'rgba(255,212,81,.06)',stroke:'rgba(255,212,81,.55)'},s);
+ const P={M:[112,135],S:[188,135]};
+ el('line',{x1:P.M[0],y1:P.M[1],x2:P.S[0],y2:P.S[1],stroke:'#ffd21f','stroke-dasharray':'4 4','stroke-opacity':.7},s);
+ ['M','S'].forEach(k=>{const[x,y]=P[k];const g=el('g',{id:'acct-'+k,class:'acct'},s);
+  const t=el('title',{},g);t.textContent=acctName(k);
+  el('circle',{cx:x,cy:y,r:22,class:'node','stroke-width':1.5},g);
+  txt(x,y-6,k,{'font-size':17,'font-weight':600,class:'lt'},g);
+  txt(x,y+10,'0',{'font-size':11,class:'nt',fill:'#8fb3dc'},g);});
+ ['B','F','C'].forEach((k,i)=>{const x=58+i*64,y=198;const g=el('g',{id:'acct-'+k,class:'acct'},s);
+  const t=el('title',{},g);t.textContent=acctName(k);
+  el('rect',{x,y,width:56,height:32,rx:2,class:'node','stroke-width':1.5},g);
+  el('circle',{cx:x+44,cy:y+16,r:3,fill:'none',stroke:'rgba(255,212,81,.55)'},g);
+  txt(x+14,y+16,k,{'font-size':16,'font-weight':600,class:'lt'},g);
+  txt(x+29,y+16,'0',{'font-size':12,class:'nt',fill:'#8fb3dc'},g);});
+}
+function buildTrash(){
+ const s=$('#trashSvg');s.innerHTML='';
+ const lid=el('g',{id:'lid'},s);
+ el('rect',{x:30,y:30,width:160,height:12,rx:3,fill:'rgba(255,255,255,.06)',stroke:'#ff5a6e','stroke-width':1.5},lid);
+ el('rect',{x:92,y:20,width:36,height:10,rx:3,fill:'none',stroke:'#ff5a6e','stroke-width':1.5},lid);
+ el('path',{d:'M40 50 H180 L168 236 H52 Z',fill:'rgba(255,255,255,.06)',stroke:'#ff5a6e','stroke-width':1.5},s);
+ el('path',{id:'bin-recyclable',d:'M42 52 H109 V234 H54 Z',fill:'rgba(43,212,255,.12)'},s);
+ el('path',{id:'bin-useless',d:'M111 52 H178 L166 234 H111 Z',fill:'rgba(255,90,110,.12)'},s);
+ el('line',{x1:110,y1:52,x2:110,y2:234,stroke:'rgba(255,255,255,.5)','stroke-dasharray':'3 4'},s);
+ txt(77,110,'↻',{'font-size':30,fill:'#2bd4ff'},s);
+ txt(143,110,'✕',{'font-size':26,fill:'#ff5a6e'},s);
+ txt(77,158,'0',{'font-size':28,'font-weight':600,fill:'#2bd4ff',id:'nRec'},s);
+ txt(143,158,'0',{'font-size':28,'font-weight':600,fill:'#ff5a6e',id:'nUse'},s);
+ txt(77,196,'Recycle',{'font-size':12,fill:'#8fb3dc'},s);
+ txt(143,196,'Useless',{'font-size':12,fill:'#8fb3dc'},s);
+}
+
+function render(){
+ const by=z=>ideas.filter(i=>i.zone===z);
+ const park=by('parking'),bank=by('bank'),trash=by('trash');
+ $('#nPark').textContent=park.length;$('#nBank').textContent=bank.length;$('#nTrash').textContent=trash.length;
+ const extra=Math.max(0,park.length-12);
+ $('#parkSub').textContent=extra?`12 bays full, ${extra} more waiting`:`${12-park.length} of 12 bays free`;
+ const cars=$('#cars');cars.innerHTML='';
+ park.slice(0,12).forEach((idea,i)=>{const row=i<6?0:1,col=i%6,cx=18+col*45+22.5,y=row?134:22;
+  const g=el('g',{id:'car-'+idea.id},cars);const t=el('title',{},g);t.textContent=idea.text;
+  el('rect',{x:cx-14,y,width:28,height:54,rx:7,fill:'rgba(52,226,122,.22)',stroke:'#34e27a','stroke-width':1.5},g);
+  el('rect',{x:cx-10,y:row?y+8:y+34,width:20,height:11,rx:3,fill:'#34e27a','fill-opacity':.6},g);
+  el('rect',{x:cx-9,y:row?y+42:y+5,width:18,height:6,rx:2,fill:'#34e27a','fill-opacity':.35},g);
+  if(idea.cycles)el('circle',{cx:cx+10,cy:row?y+48:y+6,r:3,fill:'#2bd4ff'},g);});
+ ACCTS.forEach(a=>{const n=bank.filter(i=>i.sub===a.k).length,g=$('#acct-'+a.k);
+  const shape=g.querySelector('.node');shape.setAttribute('fill',n?'rgba(255,212,81,.24)':'rgba(255,255,255,.06)');shape.setAttribute('stroke',n?'#ffd21f':'rgba(255,255,255,.5)');
+  g.querySelector('.lt').setAttribute('fill',n?'#ffd21f':'#5c82ad');g.querySelector('.nt').textContent=n;});
+ $('#nRec').textContent=trash.filter(i=>i.sub==='recyclable').length;
+ $('#nUse').textContent=trash.filter(i=>i.sub==='useless').length;
+ document.querySelectorAll('.zone').forEach(z=>z.classList.toggle('sel',z.dataset.zone===filter));
+ renderList();renderDash();
+}
+function renderList(){
+ const L=$('#list');const items=ideas.filter(i=>filter==='all'||i.zone===filter).sort((a,b)=>(b.history.at(-1).at)-(a.history.at(-1).at));
+ $('#lTitle').textContent={all:'All ideas',parking:'Parked ideas',bank:'Banked ideas',trash:'Trash bin'}[filter];
+ document.querySelectorAll('#filters button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.f===filter));
+ if(!items.length){L.innerHTML=`<li class="empty">${filter==='all'?'No ideas yet. Write one above and file it.':'Nothing here yet.'}</li>`;return}
+ L.innerHTML=items.map(i=>{const loop=i.zone==='parking'||(i.zone==='trash'&&i.sub==='recyclable');
+  return `<li class="idea" style="--ic:${color(i)}"><span class="bar"></span><div><p>${esc(i.text)}</p><div class="meta"><span class="tag">${tagLabel(i)}</span><span>${ago(i.history.at(-1).at)}</span>${i.cycles?`<span class="cyc">↻ ${i.cycles}× through the loop</span>`:''}</div></div>
+  <div class="acts">${loop?`<button class="re" data-re="${i.id}">Re-enter</button>`:''}<button class="del" data-del="${i.id}" aria-label="Delete idea">Delete</button></div></li>`}).join('');
+}
+function dayKey(t){const d=new Date(t);return d.getFullYear()+'-'+d.getMonth()+'-'+d.getDate()}
+function renderDash(){
+ const bank=ideas.filter(i=>i.zone==='bank'),park=ideas.filter(i=>i.zone==='parking'),trash=ideas.filter(i=>i.zone==='trash');
+ const rescued=ideas.filter(i=>i.cycles>0&&i.zone==='bank').length;
+ const S=[['Total ideas',ideas.length,'#e8f1ff'],['Banked',bank.length,'#ffd21f'],['Parked',park.length,'#34e27a'],['Trashed',trash.length,'#ff5a6e'],['Rescued by recycling',rescued,'#2bd4ff']];
+ $('#stats').innerHTML=S.map(([l,n,c])=>`<div class="panel stat" style="--sc:${c}"><div class="big">${n}</div><span>${l}</span></div>`).join('');
+ const days=[];for(let d=6;d>=0;d--){const t=new Date();t.setHours(12,0,0,0);t.setDate(t.getDate()-d);days.push(t)}
+ const rows=days.map(t=>{const k=dayKey(t),f=ideas.filter(i=>dayKey(i.created)===k);return{t,g:f.filter(i=>i.zone==='bank').length,p:f.filter(i=>i.zone==='parking').length,n:f.filter(i=>i.zone==='trash').length}});
+ const max=Math.max(2,...rows.map(r=>r.g+r.p+r.n));
+ const s=$('#daySvg');s.innerHTML='';const x0=40,x1=452,y0=16,y1=206,h=y1-y0,slot=(x1-x0)/7,bw=slot*.5;
+ [0,.5,1].forEach(f=>{const y=y1-f*h;el('line',{x1:x0,y1:y,x2:x1,y2:y,stroke:'rgba(255,255,255,.3)'},s);txt(x0-14,y,String(Math.round(max*f)),{'font-size':13,fill:'#8fb3dc'},s)});
+ rows.forEach((r,i)=>{const x=x0+i*slot+(slot-bw)/2;let y=y1;
+  [[r.g,'#ffd21f'],[r.p,'#34e27a'],[r.n,'#ff5a6e']].forEach(([v,c])=>{if(!v)return;const hh=v/max*h;y-=hh;el('rect',{x,y,width:bw,height:Math.max(hh-2,1),fill:c,'fill-opacity':.85},s)});
+  const tot=r.g+r.p+r.n;if(tot)txt(x+bw/2,y-12,String(tot),{'font-size':14,fill:'#e8f1ff','font-weight':600},s);
+  txt(x+bw/2,y1+22,i===6?'Today':r.t.toLocaleDateString(undefined,{weekday:'short'}),{'font-size':15,fill:'#8fb3dc'},s);});
+ const am=Math.max(1,...ACCTS.map(a=>bank.filter(i=>i.sub===a.k).length));
+ $('#acctBars').innerHTML=ACCTS.map(a=>{const n=bank.filter(i=>i.sub===a.k).length;return`<div class="hbar"><b style="color:var(--bank)">${a.k}</b><div><small>${a.name}${a.note?' ('+a.note+')':''}</small><div class="t"><i style="width:${n/am*100}%;--hc:var(--bank)"></i></div></div><em>${n}</em></div>`}).join('');
+ const tm=Math.max(1,trash.length);
+ $('#trashBars').innerHTML=TRASH.map(t=>{const n=trash.filter(i=>i.sub===t.k).length;return`<div class="hbar"><b style="color:${COL[t.k]}">${t.k==='recyclable'?'↻':'✕'}</b><div><small>${t.name}</small><div class="t"><i style="width:${n/tm*100}%;--hc:${COL[t.k]}"></i></div></div><em>${n}</em></div>`}).join('');
+}
+
+const cat=$('#cat'),sub=$('#sub'),ta=$('#txt'),hint=$('#hint');
+function setHint(m,err){hint.textContent=m;hint.classList.toggle('err',!!err)}
+function defaultHint(){const c=cat.value;setHint(c===''?'No tag sends the idea straight to Parking.':c==='bank'?'Pick the account this idea belongs to.':c==='trash'?'Recyclable ideas can be reworked and sent back into the loop.':'Parked ideas wait here until you decide.')}
+cat.addEventListener('change',()=>{const c=cat.value;
+ if(c==='bank'){sub.innerHTML='<option value="">Choose account</option>'+ACCTS.map(a=>`<option value="${a.k}">${a.k} · ${a.name}</option>`).join('');sub.hidden=false}
+ else if(c==='trash'){sub.innerHTML='<option value="">Choose bin</option>'+TRASH.map(t=>`<option value="${t.k}">${t.name}</option>`).join('');sub.hidden=false}
+ else{sub.innerHTML='';sub.hidden=true}
+ defaultHint();});
+sub.addEventListener('change',defaultHint);
+ta.addEventListener('input',()=>{const n=ta.value.length;$('#cnt').textContent=n+' / 280';$('#cnt').classList.toggle('warn',n>240);if(hint.classList.contains('err'))defaultHint()});
+ta.addEventListener('keydown',e=>{if(e.key==='Enter'&&(e.metaKey||e.ctrlKey))fileIdea()});
+$('#fileBtn').addEventListener('click',fileIdea);
+
+function target(zone,s){
+ if(zone==='bank')return $('#acct-'+s);
+ if(zone==='trash')return $('#bin-'+s);
+ const n=ideas.filter(i=>i.zone==='parking').length;return n<=12?null:$('#parkSvg');
+}
+function fly(to,c,label){
+ return new Promise(res=>{
+  if(RM||!to||$('#mapView').hidden){res();return}
+  const a=$('#fileBtn').getBoundingClientRect(),b=to.getBoundingClientRect();
+  const chip=document.createElement('div');chip.className='chip';chip.style.setProperty('--cc',c);chip.textContent=label;document.body.appendChild(chip);
+  const w=chip.offsetWidth,h=chip.offsetHeight,sx=a.left+a.width/2-w/2,sy=Math.max(a.top+a.height/2-h/2,-h),tx=b.left+b.width/2-w/2,ty=b.top+b.height/2-h/2;
+  chip.style.left=sx+'px';chip.style.top=sy+'px';
+  const an=chip.animate([{transform:'translate(0,0) scale(1)',opacity:1},{transform:`translate(${(tx-sx)/2}px,${(ty-sy)/2-60}px) scale(.85)`,opacity:1,offset:.55},{transform:`translate(${tx-sx}px,${ty-sy}px) scale(.3)`,opacity:.2}],{duration:750,easing:'cubic-bezier(.5,0,.3,1)'});
+  an.onfinish=()=>{chip.remove();res()};});
+}
+function pulse(zone){const z=document.querySelector(`.zone[data-zone="${zone}"]`);z.classList.remove('hit');void z.offsetWidth;z.classList.add('hit');
+ if(zone==='trash'){z.classList.add('lidopen');setTimeout(()=>z.classList.remove('lidopen'),700)}}
+
+async function fileIdea(){
+ const text=ta.value.trim();let zone=cat.value||'parking',s=sub.value||null;
+ if(!text){setHint('Write the idea first.',true);ta.focus();return}
+ if((zone==='bank'||zone==='trash')&&!s){setHint(zone==='bank'?'Choose an account for this idea.':'Choose recyclable or useless.',true);sub.focus();return}
+ if(zone==='parking')s=null;
+ const at=Date.now();let idea;
+ if(reId&&(idea=ideas.find(i=>i.id===reId))){idea.text=text;idea.zone=zone;idea.sub=s;idea.cycles++;idea.history.push({zone,sub:s,at})}
+ else{idea={id:uid(),text,zone,sub:s,created:at,cycles:0,history:[{zone,sub:s,at}]};ideas.push(idea)}
+ save();
+ if(zone==='trash'){const zt=document.querySelector('.zone.trash');zt.classList.add('lidopen')}
+ const preTarget=zone==='parking'?null:target(zone,s);
+ const lbl=(zone==='bank'?s+' · ':'')+text;
+ if(zone==='parking'){render();await fly($('#car-'+idea.id)||$('#parkSvg'),COL.parking,lbl)}
+ else{await fly(preTarget,color(idea),lbl);render()}
+ pulse(zone);
+ ta.value='';$('#cnt').textContent='0 / 280';cat.value='';cat.dispatchEvent(new Event('change'));endReentry();
+ setHint(`Filed to ${zone==='bank'?acctName(s)+' in the Bank':zone==='trash'?(s==='recyclable'?'the recycling side of the bin':'the useless side of the bin'):'Parking'}.`);
+}
+function endReentry(){reId=null;$('#reentry').classList.remove('on');$('#fileBtn').textContent='File idea'}
+$('#cancelRe').addEventListener('click',()=>{endReentry();ta.value='';$('#cnt').textContent='0 / 280';defaultHint()});
+
+$('#list').addEventListener('click',e=>{const r=e.target.closest('[data-re]'),d=e.target.closest('[data-del]');
+ if(r){const i=ideas.find(x=>x.id===r.dataset.re);reId=i.id;ta.value=i.text;ta.dispatchEvent(new Event('input'));cat.value='';cat.dispatchEvent(new Event('change'));
+  $('#reentry').classList.add('on');$('#fileBtn').textContent='Refile idea';window.scrollTo({top:0,behavior:RM?'auto':'smooth'});ta.focus({preventScroll:true})}
+ if(d){ideas=ideas.filter(x=>x.id!==d.dataset.del);if(reId===d.dataset.del)endReentry();save();render()}});
+document.querySelectorAll('.zone').forEach(z=>{const go=()=>{filter=filter===z.dataset.zone?'all':z.dataset.zone;render();$('.ledger').scrollIntoView({behavior:RM?'auto':'smooth',block:'start'})};
+ z.addEventListener('click',go);z.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();go()}})});
+$('#filters').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;filter=b.dataset.f;render()});
+$('#reset').addEventListener('click',()=>{ideas=[];save();endReentry();render()});
+function setView(v){const M={map:'#mapView',dash:'#dashView',about:'#aboutView'};for(const k in M)$(M[k]).hidden=k!==v;$('#vMap').setAttribute('aria-pressed',v==='map');$('#vDash').setAttribute('aria-pressed',v==='dash');$('#vAbout').setAttribute('aria-pressed',v==='about')}
+$('#vMap').addEventListener('click',()=>setView('map'));$('#vDash').addEventListener('click',()=>setView('dash'));$('#vAbout').addEventListener('click',()=>setView('about'));
+
+buildParking();buildBank();buildTrash();load();render();
+</script>
+</body>
+</html>
