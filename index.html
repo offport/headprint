@@ -118,7 +118,7 @@ ul.ideas{list-style:none;margin:0;padding:0;display:grid;gap:8px}
 @media (max-width:860px){.zones{grid-template-columns:1fr}.dgrid{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,1fr)}.stats .stat:first-child{grid-column:span 2}}
 @media (max-width:560px){.wrap{padding:12px 14px 40px}header{gap:8px 10px;padding-bottom:12px}.mark{font-size:19px}.mark small{display:none}.mark .brandmark{width:54px;height:54px}.views{width:100%}.views button{flex:1;padding:9px 6px;text-align:center}.atitle{font-size:20px}.lead{font-size:16px}
 .composer{margin-bottom:12px}textarea{min-height:58px}
-.zones{grid-template-columns:repeat(3,1fr);gap:8px}.zone{padding:9px 6px;align-items:center;text-align:center}.zone .zh{flex-direction:column;align-items:center;gap:0;margin-bottom:2px}.zone h2{font-size:13px}.zone .big{font-size:24px}.zsub{display:none}.zone svg{height:92px;width:100%;margin:6px auto 0}#bankSvg .lt,#bankSvg .nt{display:none}
+.zones{grid-template-columns:repeat(3,1fr);gap:8px}.zone{padding:9px 6px;align-items:center;text-align:center}.zone .zh{flex-direction:column;align-items:center;gap:0;margin-bottom:2px}.zone h2{font-size:13px}.zone .big{font-size:24px}.zsub{display:none}.zone svg{height:92px;width:100%;margin:6px auto 0}#bankSvg .lt,#bankSvg .nt,#trashSvg .tlabel{display:none}
 .stats{grid-template-columns:repeat(2,1fr)}.big{font-size:30px}.zone .big{font-size:24px}
 .idea{grid-template-columns:4px 1fr;row-gap:8px}.idea .bar{grid-row:1/3}.idea .acts{grid-column:2;justify-content:flex-end}}
 @media (prefers-reduced-motion:reduce){.hit{animation:none}#lid{transition:none}}
@@ -348,8 +348,8 @@ function buildTrash(){
  txt(143,110,'✕',{'font-size':26,fill:'#ff5a6e'},s);
  txt(77,158,'0',{'font-size':28,'font-weight':600,fill:'#2bd4ff',id:'nRec'},s);
  txt(143,158,'0',{'font-size':28,'font-weight':600,fill:'#ff5a6e',id:'nUse'},s);
- txt(77,196,'Recycle',{'font-size':12,fill:'#8fb3dc'},s);
- txt(143,196,'Useless',{'font-size':12,fill:'#8fb3dc'},s);
+ txt(77,196,'Recycle',{'font-size':12,fill:'#8fb3dc',class:'tlabel'},s);
+ txt(143,196,'Useless',{'font-size':12,fill:'#8fb3dc',class:'tlabel'},s);
 }
 
 function render(){
