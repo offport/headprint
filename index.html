@@ -68,6 +68,8 @@ select{background:var(--void);color:var(--text);border:1px solid var(--line2);bo
 .filters{display:flex;gap:6px;flex-wrap:wrap}
 .filters button{font-family:var(--hud);font-size:13px;background:transparent;border:1px solid var(--line2);color:var(--muted);padding:5px 10px;border-radius:2px;cursor:pointer}
 .filters button[aria-pressed="true"]{color:var(--kr);border-color:var(--kr)}
+.lh-right{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.sortsel{font-family:var(--hud);font-size:14px;background:var(--void);color:var(--text);border:1px solid var(--line2);border-radius:2px;padding:6px 8px;min-width:0}
 ul.ideas{list-style:none;margin:0;padding:0;display:grid;gap:8px}
 .idea{display:grid;grid-template-columns:4px 1fr auto;gap:12px;background:var(--panel2);border:1px solid var(--line);padding:10px 12px 10px 0}
 .idea .bar{background:var(--ic)}
@@ -178,11 +180,19 @@ ul.ideas{list-style:none;margin:0;padding:0;display:grid;gap:8px}
   <section class="panel ledger" aria-label="Ideas">
     <div class="lh">
       <h2 id="lTitle">All ideas</h2>
-      <div class="filters" id="filters">
-        <button data-f="all" aria-pressed="true">All</button>
-        <button data-f="parking" aria-pressed="false">Parking</button>
-        <button data-f="bank" aria-pressed="false">Bank</button>
-        <button data-f="trash" aria-pressed="false">Trash</button>
+      <div class="lh-right">
+        <div class="filters" id="filters">
+          <button data-f="all" aria-pressed="true">All</button>
+          <button data-f="parking" aria-pressed="false">Parking</button>
+          <button data-f="bank" aria-pressed="false">Bank</button>
+          <button data-f="trash" aria-pressed="false">Trash</button>
+        </div>
+        <select id="sort" class="sortsel" aria-label="Order ideas">
+          <option value="new">Newest</option>
+          <option value="old">Oldest</option>
+          <option value="az">A to Z</option>
+          <option value="loop">Most looped</option>
+        </select>
       </div>
     </div>
     <ul class="ideas" id="list"></ul>
@@ -271,6 +281,9 @@ const RM=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const $=s=>document.querySelector(s);
 const NS='http://www.w3.org/2000/svg';
 let ideas=[],filter='all',reId=null;
+let sort=(()=>{try{return localStorage.getItem('headprint-sort')||'new'}catch(e){return 'new'}})();
+const lastAt=i=>i.history.at(-1).at;
+const SORTERS={new:(a,b)=>lastAt(b)-lastAt(a),old:(a,b)=>lastAt(a)-lastAt(b),az:(a,b)=>a.text.toLowerCase().localeCompare(b.text.toLowerCase()),loop:(a,b)=>(b.cycles-a.cycles)||(lastAt(b)-lastAt(a))};
 
 function enc(o){return btoa(unescape(encodeURIComponent(JSON.stringify(o))))}
 function dec(s){return JSON.parse(decodeURIComponent(escape(atob(s))))}
@@ -374,7 +387,7 @@ function render(){
  renderList();renderDash();
 }
 function renderList(){
- const L=$('#list');const items=ideas.filter(i=>filter==='all'||i.zone===filter).sort((a,b)=>(b.history.at(-1).at)-(a.history.at(-1).at));
+ const L=$('#list');const items=ideas.filter(i=>filter==='all'||i.zone===filter).sort(SORTERS[sort]||SORTERS.new);
  $('#lTitle').textContent={all:'All ideas',parking:'Parked ideas',bank:'Banked ideas',trash:'Trash bin'}[filter];
  document.querySelectorAll('#filters button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.f===filter));
  if(!items.length){L.innerHTML=`<li class="empty">${filter==='all'?'No ideas yet. Write one above and file it.':'Nothing here yet.'}</li>`;return}
@@ -462,6 +475,8 @@ $('#list').addEventListener('click',e=>{const r=e.target.closest('[data-re]'),d=
 document.querySelectorAll('.zone').forEach(z=>{const go=()=>{filter=filter===z.dataset.zone?'all':z.dataset.zone;render();$('.ledger').scrollIntoView({behavior:RM?'auto':'smooth',block:'start'})};
  z.addEventListener('click',go);z.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();go()}})});
 $('#filters').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;filter=b.dataset.f;render()});
+$('#sort').value=sort;
+$('#sort').addEventListener('change',e=>{sort=e.target.value;try{localStorage.setItem('headprint-sort',sort)}catch(_){}renderList()});
 $('#reset').addEventListener('click',()=>{if(ideas.length&&!confirm('Clear all '+ideas.length+' ideas? This cannot be undone. Export a backup first if you want to keep them.'))return;ideas=[];save();endReentry();render();setHint('Cleared. Starting empty.')});
 $('#flush').addEventListener('click',()=>{if(ideas.length&&!confirm('Flush all '+ideas.length+' ideas and restore the default samples? Your current ideas will be replaced.'))return;ideas=seed();save();endReentry();filter='all';render();setHint('Flushed. Default sample ideas restored.')});
 function download(name,text){const b=new Blob([text],{type:'application/json'});const u=URL.createObjectURL(b);const a=document.createElement('a');a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),1500)}
