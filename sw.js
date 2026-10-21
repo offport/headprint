@@ -1,6 +1,6 @@
 /* HeadPrint service worker — offline app shell.
    Bump CACHE when you want clients to refresh cached assets. */
-const CACHE = 'headprint-v2';
+const CACHE = 'headprint-v3';
 const CORE = ['./', 'index.html', 'manifest.webmanifest', 'icon-192.png', 'icon-512.png'];
 
 self.addEventListener('install', e => {
@@ -22,13 +22,13 @@ self.addEventListener('fetch', e => {
   const sameOrigin = url.origin === self.location.origin;
   const isFont = /fonts\.(googleapis|gstatic)\.com$/.test(url.host);
   if (!sameOrigin && !isFont) return;
-  e.respondWith(
-    caches.match(req).then(hit =>
-      hit || fetch(req).then(res => {
-        const copy = res.clone();
-        caches.open(CACHE).then(c => c.put(req, copy)).catch(() => {});
-        return res;
-      }).catch(() => caches.match('index.html'))
-    )
-  );
+  const isNav = req.mode === 'navigate' || (req.headers.get('accept') || '').includes('text/html');
+  const store = res => { const copy = res.clone(); caches.open(CACHE).then(c => c.put(req, copy)).catch(() => {}); return res; };
+  if (isNav) {
+    // network-first for the page, so updates show immediately when online
+    e.respondWith(fetch(req).then(store).catch(() => caches.match(req).then(h => h || caches.match('index.html'))));
+  } else {
+    // cache-first for static assets and fonts
+    e.respondWith(caches.match(req).then(hit => hit || fetch(req).then(store)));
+  }
 });
